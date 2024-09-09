@@ -19,29 +19,34 @@ def echo_all(message):
         user = message.from_user.username
     text = message.text
     chatid = message.chat.id
-    audio_only = False
-
+    type = "video"
+    text = text.replace("@eduytdl_bot", "")
     if "youtu.be" in text or "youtube" in text:
         startreply = bot.reply_to(message, "Downloading")
         if "/video" in text:
-            text = text.replace("/video@eduytdl_bot ", "")
-            text = text.replace("/video ", "")
+            text = text.replace("/video", "")
         if "/audio" in text:
-            audio_only = True
-            text = text.replace("/audio@eduytdl_bot ", "")
-            text = text.replace("/audio ", "")
-
-        result = download_video(user, chatid, text, audio_only)
+            type = "audio"
+            text = text.replace("/audio", "")
+        if "/live" in text:
+            type = "live"
+            text = text.replace("/live", "")
+        text = text.replace(" ", "")
+        result = download_video(user, chatid, text, type)
 
         if result[0]:
-            video = open(result[1], 'rb')
+            try:
+                video = open(result[1], 'rb')
+            except:
+                print("File not found!")
+            
             bot.delete_message(startreply.chat.id, startreply.id)
             sendingreply = bot.reply_to(message, "Uploading")
             try:
-                if audio_only:
+                if type == "audio":
                     print("Sending audio")                    
                     bot.send_audio(chat_id = chatid, audio = video, timeout = 9999, reply_to_message_id = message.id)
-                else:
+                if type == "video" or type == "live":
                     print("Sending video")
                     bot.send_video(chat_id = chatid, video = video, timeout = 9999, supports_streaming = True, reply_to_message_id = message.id)
                 bot.delete_message(sendingreply.chat.id, sendingreply.id)
@@ -51,25 +56,23 @@ def echo_all(message):
         else:
             bot.reply_to(message, result[1])
 
-
-def download_video(user, chatid, link, audio_only):
+def download_video(user, chatid, link, type):
     value = int(time.time())
     os.system('mkdir -p /tmp/ytdl')
     extension = ".mp4"
-    if audio_only:
+    if type == "audio":
         extension = ".mp3"
     path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     result = 0
     print("Downloading video for " + user)
-    try:
-        if audio_only:
-            result = os.system('./dla.sh --no-playlist' +  ' -o ' + path + ' ' + link + '')
-        else:
-            result = os.system('./dl.sh --no-playlist' +  ' -o ' + path + ' ' + link + ' > /dev/null 2>&1')
+    try: 
+        result = os.system('./dl' + type + '.sh --no-playlist' +  ' -o ' + path + ' ' + link)
+        if type == "live":
+            time.sleep(360)
     except CalledProcessError:
         print("yt-dlp error!")
     if result == 0:
-        return [True, path]
+        return [True, path, result]
     else:
         return [False, "Erro ao baixar video"]
 print("Bot started!")
