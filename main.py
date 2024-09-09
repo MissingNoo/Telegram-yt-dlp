@@ -21,9 +21,15 @@ def echo_all(message):
     chatid = message.chat.id
     type = "video"
     text = text.replace("@eduytdl_bot", "")
-    if "youtu.be" in text or "youtube" in text:
+    custom_file = ""
+    if "|" in text:
+        s = text.split("|")
+        text = s[0]
+        custom_file = s[1].replace(" ", "")
+    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text:
         startreply = bot.reply_to(message, "Downloading")
         if "/video" in text:
+            type = "video"
             text = text.replace("/video", "")
         if "/audio" in text:
             type = "audio"
@@ -32,7 +38,7 @@ def echo_all(message):
             type = "live"
             text = text.replace("/live", "")
         text = text.replace(" ", "")
-        result = download_video(user, chatid, text, type)
+        result = download_video(user, chatid, text, type, custom_file)
 
         if result[0]:
             try:
@@ -56,13 +62,15 @@ def echo_all(message):
         else:
             bot.reply_to(message, result[1])
 
-def download_video(user, chatid, link, type):
+def download_video(user, chatid, link, type, custom_file):
     value = int(time.time())
     os.system('mkdir -p /tmp/ytdl')
     extension = ".mp4"
     if type == "audio":
         extension = ".mp3"
     path = '/tmp/ytdl/' + user + '.' + str(value) + extension
+    if custom_file != "":
+        path = '/tmp/ytdl/' + custom_file + extension
     result = 0
     print("Downloading video for " + user)
     try: 
@@ -73,6 +81,8 @@ def download_video(user, chatid, link, type):
         print("yt-dlp error!")
     if result == 0:
         return [True, path, result]
+    elif result == 124:
+        return [False, "Video muito longo"]
     else:
         return [False, "Erro ao baixar video"]
 print("Bot started!")
