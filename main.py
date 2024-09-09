@@ -6,11 +6,21 @@ import telegram
 #from random import randint
 import time
 from subprocess import DEVNULL, STDOUT, check_call, CalledProcessError
-apihelper.API_URL = 'http://0.0.0.0:8082/bot{0}/{1}'
-apihelper.FILE_URL = 'http://0.0.0.0:8082'
 
+#region Start
+API_PORT = 8081
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
+try:
+    bot.log_out() #Logout from default api
+except: #bot is already logged out from api
+    print("")
+
+#change to local api
+apihelper.API_URL = 'http://0.0.0.0:' + str(API_PORT) + '/bot{0}/{1}'
+apihelper.FILE_URL = 'http://0.0.0.0:' + str(API_PORT)
+bot = telebot.TeleBot(BOT_TOKEN)
+#endregion
 
 @bot.message_handler(func=lambda msg: True)
 def echo_all(message):
