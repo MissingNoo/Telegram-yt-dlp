@@ -8,6 +8,7 @@ import time
 from subprocess import DEVNULL, STDOUT, check_call, CalledProcessError
 
 #region Start
+global startreply
 API_PORT = 8081
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -30,27 +31,35 @@ def echo_all(message):
     text = message.text
     chatid = message.chat.id
     type = "video"
-    text = text.replace("@eduytdl_bot", "")
     custom_file = ""
+    can_download = True
     if "|" in text:
         s = text.split("|")
         text = s[0]
         custom_file = s[1].replace(" ", "")
-    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text:
-        startreply = bot.reply_to(message, "Downloading")
+    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text or "@eduytdl_bot" in text:
+        text = text.replace("@eduytdl_bot", "")
         if "/video" in text:
             type = "video"
             text = text.replace("/video", "")
         if "/audio" in text:
             type = "audio"
             text = text.replace("/audio", "")
-        if "/live" in text:
+        if "/live " not in text and "/live/" in text:
+            can_download = False
+        if "/live " in text:
             type = "live"
-            text = text.replace("/live", "")
+            text = text.replace("/live ", "")
+        
+        
         text = text.replace(" ", "")
-        result = download_video(user, chatid, text, type, custom_file)
+        if can_download:
+            result = download_video(user, chatid, text, type, custom_file)
+            startreply = bot.reply_to(message, "Downloading")
+        else:
+            result = [3]
 
-        if result[0]:
+        if result[0] == True:
             try:
                 video = open(result[1], 'rb')
             except:
@@ -64,12 +73,12 @@ def echo_all(message):
                     bot.send_audio(chat_id = chatid, audio = video, timeout = 9999, reply_to_message_id = message.id)
                 if type == "video" or type == "live":
                     print("Sending video")
-                    bot.send_video(chat_id = chatid, video = video, timeout = 9999, supports_streaming = True, reply_to_message_id = message.id)
+                    bot.send_video(chat_id = chatid, video = video, timeout = 9999, supports_streaming = True, reply_to_message_id = message.id, )
                 bot.delete_message(sendingreply.chat.id, sendingreply.id)
                 os.system("rm " + result[1])
             except Exception as error:
                 bot.reply_to(message, "Erro ao enviar o video.")
-        else:
+        elif result[0] != 3:
             bot.reply_to(message, result[1])
 
 def download_video(user, chatid, link, type, custom_file):
@@ -83,7 +92,7 @@ def download_video(user, chatid, link, type, custom_file):
         path = '/tmp/ytdl/' + custom_file + extension
     result = 0
     print("Downloading video for " + user)
-    try: 
+    try:
         result = os.system('./dl' + type + '.sh --no-playlist' +  ' -o ' + path + ' ' + link)
         if type == "live":
             time.sleep(360)
