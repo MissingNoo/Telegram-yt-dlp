@@ -37,7 +37,7 @@ def echo_all(message):
         s = text.split("|")
         text = s[0]
         custom_file = s[1].replace(" ", "")
-    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text or "@eduytdl_bot" in text:
+    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
         text = text.replace("@eduytdl_bot", "")
         if "/video" in text:
             type = "video"
@@ -50,18 +50,21 @@ def echo_all(message):
         if "/live " in text:
             type = "live"
             text = text.replace("/live ", "")
-        
+        if "x.com" in text:
+            type = "x"
+            text = str.strip(text)
         
         text = text.replace(" ", "")
         if can_download:
-            result = download_video(user, chatid, text, type, custom_file)
             startreply = bot.reply_to(message, "Downloading")
+            result = download_video(user, chatid, text, type, custom_file)
         else:
             result = [3]
 
         if result[0] == True:
             try:
-                video = open(result[1], 'rb')
+                os.system("mv " + result[1] + "* " + result[1] + "file")
+                video = open(result[1] + "file", 'rb')
             except:
                 print("File not found!")
             
@@ -71,11 +74,12 @@ def echo_all(message):
                 if type == "audio":
                     print("Sending audio")                    
                     bot.send_audio(chat_id = chatid, audio = video, timeout = 9999, reply_to_message_id = message.id)
-                if type == "video" or type == "live":
+                if type == "video" or type == "live" or type == "x":
                     print("Sending video")
                     bot.send_video(chat_id = chatid, video = video, timeout = 9999, supports_streaming = True, reply_to_message_id = message.id, )
                 bot.delete_message(sendingreply.chat.id, sendingreply.id)
-                os.system("rm " + result[1])
+                if " " not in result[1] and "tmp" in result[1]:
+                    os.system("rm " + result[1] + "file")
             except Exception as error:
                 bot.reply_to(message, "Erro ao enviar o video.")
         elif result[0] != 3:
@@ -87,13 +91,22 @@ def download_video(user, chatid, link, type, custom_file):
     extension = ".mp4"
     if type == "audio":
         extension = ".mp3"
-    path = '/tmp/ytdl/' + user + '.' + str(value) + extension
+    path = '/tmp/ytdl/' + user + '/'
+    os.system('mkdir ' + path)
+    #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
+    #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     if custom_file != "":
         path = '/tmp/ytdl/' + custom_file + extension
     result = 0
     print("Downloading video for " + user)
     try:
-        result = os.system('./dl' + type + '.sh --no-playlist' +  ' -o ' + path + ' ' + link)
+        downtries = 0
+        while True:
+            downtries += 1
+            result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' ' + "'" + link + "'")
+            print("current try: " + str(downtries))
+            if result == 0 or downtries > 30:
+                break
         if type == "live":
             time.sleep(360)
     except CalledProcessError:
