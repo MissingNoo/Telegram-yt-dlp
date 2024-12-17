@@ -63,8 +63,12 @@ def echo_all(message):
 
         if result[0] == True:
             try:
-                os.system("mv " + result[1] + "* " + result[1] + "file")
-                video = open(result[1] + "file", 'rb')
+                os.system("mv " + result[1] + "* " + result[1])
+                print(result[1])
+                if type == "audio":
+                    video = open(result[1] + result[3], 'rb')
+                else:
+                    video = open(result[1], 'rb')
             except:
                 print("File not found!")
             
@@ -96,14 +100,18 @@ def download_video(user, chatid, link, type, custom_file):
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     if custom_file != "":
-        path = '/tmp/ytdl/' + custom_file + extension
+        expath = custom_file + extension
     result = 0
     print("Downloading video for " + user)
     try:
         downtries = 0
         while True:
             downtries += 1
-            result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' ' + "'" + link + "'")
+            if type != "audio":
+                result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' ' + "'" + link + "'")
+                path = path + "file"
+            else:
+                result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' -o ' + expath + " '" + link + "'")
             print("current try: " + str(downtries))
             if result == 0 or downtries > 30:
                 break
@@ -112,7 +120,7 @@ def download_video(user, chatid, link, type, custom_file):
     except CalledProcessError:
         print("yt-dlp error!")
     if result == 0:
-        return [True, path, result]
+        return [True, path, result, expath]
     elif result == 124:
         return [False, "Video muito longo"]
     else:
