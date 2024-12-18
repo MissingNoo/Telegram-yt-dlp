@@ -63,12 +63,12 @@ def echo_all(message):
 
         if result[0] == True:
             try:
-                os.system("mv " + result[1] + "* " + result[1])
-                print(result[1])
                 if type == "audio":
                     video = open(result[1] + result[3], 'rb')
                 else:
-                    video = open(result[1], 'rb')
+                    os.system("mv " + result[1] + "* " + result[1] + "file")
+                    print("A: mv " + result[1] + "* " + result[1] + "file")
+                    video = open(result[1] + "file", 'rb')
             except:
                 print("File not found!")
             
@@ -90,6 +90,8 @@ def echo_all(message):
             bot.reply_to(message, result[1])
 
 def download_video(user, chatid, link, type, custom_file):
+    user = user.replace(" ", "")
+    expath = ""
     value = int(time.time())
     os.system('mkdir -p /tmp/ytdl')
     extension = ".mp4"
@@ -109,7 +111,6 @@ def download_video(user, chatid, link, type, custom_file):
             downtries += 1
             if type != "audio":
                 result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' ' + "'" + link + "'")
-                path = path + "file"
             else:
                 result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' -o ' + expath + " '" + link + "'")
             print("current try: " + str(downtries))
