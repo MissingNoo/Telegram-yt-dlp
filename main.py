@@ -91,9 +91,16 @@ def echo_all(message):
                     bot.send_video(chat_id = chatid, video = video, timeout = 9999, supports_streaming = True, reply_to_message_id = message.id, )
                 bot.delete_message(sendingreply.chat.id, sendingreply.id)
                 if " " not in result[1] and "tmp" in result[1]:
-                    os.system("rm " + result[1] + "file")
+                    path = result[1].replace(" ", "")
+                    if "/ " not in path:
+                        os.system("rm " + path + "*")
+                    #os.system("rm " + result[1] + "file")
             except Exception as error:
+                path = result[1].replace(" ", "")
+                if "/ " not in path:
+                    os.system("rm " + path + "*")
                 bot.reply_to(message, "Erro ao enviar o video.")
+                
         elif result[0] != 3:
             bot.reply_to(message, result[1])
 
