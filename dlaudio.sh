@@ -7,4 +7,4 @@ do
     i=$((i + 1));
 done
 #echo $args
-timeout 5m /usr/bin/yt-dlp --extract-audio --audio-format mp3 $args > /dev/null 2>&1
+timeout 5m /usr/bin/yt-dlp --cookies cookies.txt --extract-audio --audio-format mp3 $args > /dev/null 2>&1

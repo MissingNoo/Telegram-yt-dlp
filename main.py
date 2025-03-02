@@ -6,7 +6,8 @@ import telegram
 #from random import randint
 import time
 from subprocess import DEVNULL, STDOUT, check_call, CalledProcessError
-
+import requests
+import json
 #region Start
 global startreply
 API_PORT = 8081
@@ -33,12 +34,19 @@ def echo_all(message):
     type = "video"
     custom_file = ""
     can_download = True
+    if "/ai" in text:
+        firstreply = bot.reply_to(message, "Gerando resposta")
+        res = ai_response(text)
+        print(res)
+        bot.reply_to(message, res["response"])
+        bot.delete_message(firstreply.chat.id, firstreply.id)
     if "|" in text:
         s = text.split("|")
         text = s[0]
         custom_file = s[1].replace(" ", "")
-    if "youtu.be" in text or "youtube.com" in text or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
+    if (("youtu.be" in text or "youtube.com" in text) and "channel" not in text) or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
         text = text.replace("@eduytdl_bot", "")
+        text = text.replace("channel", "asdasdkasdkaskdasd")
         if "/video" in text:
             type = "video"
             text = text.replace("/video", "")
@@ -126,5 +134,17 @@ def download_video(user, chatid, link, type, custom_file):
         return [False, "Video muito longo"]
     else:
         return [False, "Erro ao baixar video"]
+def ai_response(text):
+
+    url = 'http://localhost:11434/api/generate'
+    myobj = {
+        "model": "llama3.2",
+        "prompt": text.replace("/ai ", ""),
+        "stream": False
+    }
+
+    x = requests.post(url, json=myobj)
+    r = json.loads(x.text)
+    return r
 print("Bot started!")
 bot.infinity_polling()
