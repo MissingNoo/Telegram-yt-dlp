@@ -61,7 +61,7 @@ def echo_all(message):
         if "x.com" in text:
             type = "x"
             text = str.strip(text)
-        
+
         text = text.replace(" ", "")
         if can_download:
             startreply = bot.reply_to(message, "Downloading")
