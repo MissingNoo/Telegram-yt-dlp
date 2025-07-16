@@ -44,7 +44,7 @@ def echo_all(message):
         s = text.split("|")
         text = s[0]
         custom_file = s[1].replace(" ", "")
-    if (("youtu.be" in text or "youtube.com" in text) and "channel" not in text) or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
+    if (("https" in text or "youtu.be" in text or "youtube.com" in text) and "channel" not in text) or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
         text = text.replace("@eduytdl_bot", "")
         text = text.replace("channel", "asdasdkasdkaskdasd")
         if "/video" in text:
@@ -71,12 +71,13 @@ def echo_all(message):
 
         if result[0] == True:
             try:
-                if type == "audio":
-                    video = open(result[1] + result[3], 'rb')
-                else:
-                    os.system("mv " + result[1] + "* " + result[1] + "file")
-                    print("A: mv " + result[1] + "* " + result[1] + "file")
-                    video = open(result[1] + "file", 'rb')
+                video = open(result[1] + result[3], 'rb')
+                #if type == "audio":
+                #    video = open(result[1] + result[3], 'rb')
+                #else:
+                #    #os.system("mv " + result[1] + "* " + result[1] + "file")
+                #    #print("A: mv " + result[1] + "* " + result[1] + "file")
+                #    video = open(result[1] + result[3], 'rb')
             except:
                 print("File not found!")
             
@@ -106,7 +107,7 @@ def echo_all(message):
 
 def download_video(user, chatid, link, type, custom_file):
     user = user.replace(" ", "")
-    expath = ""
+    expath = str(chatid)
     value = int(time.time())
     os.system('mkdir -p /tmp/ytdl')
     extension = ".mp4"
@@ -117,30 +118,45 @@ def download_video(user, chatid, link, type, custom_file):
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     if custom_file != "":
-        expath = custom_file + extension
+        expath = custom_file
     result = 0
+    cobalt = 'https://cobalt.337494.xyz'
+    myobj = json.loads("{}")
+    myobj["url"] = link
+    if type == "audio":
+        myobj["downloadMode"] = "audio"
+    print(myobj)
+    res = requests.post(cobalt, json = myobj, headers = {"Accept" : "application/json",  "Content-Type" : "application/json"}).json()
+    if type == "audio" and expath == str(chatid):
+        expath = res["filename"]
     print("Downloading video for " + user)
-    try:
-        downtries = 0
-        while True:
-            downtries += 1
-            if type != "audio":
-                result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' ' + "'" + link + "'")
-            else:
-                result = os.system('./dl' + type + '.sh --no-playlist' +  ' -P ' + path + ' -o ' + expath + " '" + link + "'")
-            print("current try: " + str(downtries))
-            if result == 0 or downtries > 30:
-                break
-        if type == "live":
-            time.sleep(360)
-    except CalledProcessError:
-        print("yt-dlp error!")
-    if result == 0:
-        return [True, path, result, expath]
-    elif result == 124:
-        return [False, "Video muito longo"]
+    print(res)
+    if res["status"] == "redirect" or res["status"] == "tunnel":
+        try:
+            downtries = 0
+            while True:
+                downtries += 1
+                if type != "audio":
+                    extension += ".b"
+                result = os.system('aria2c' + ' -o "' + expath + extension + '" -d ' + path + " '" + res["url"] + "'")
+                if type != "audio":
+                    result = os.system('ffmpeg -err_detect ignore_err -i ' + path + expath + extension + ' -c copy ' + path + expath + extension.replace(".b", ""))
+                    extension = extension.replace(".b", "")
+                print("current try: " + str(downtries))
+                if result == 0 or downtries > 30:
+                    break
+            if type == "live":
+                time.sleep(360)
+        except CalledProcessError:
+            print("yt-dlp error!")
+        if result == 0:
+            return [True, path, result, expath + extension]
+        elif result == 124:
+            return [False, "Video muito longo"]
+        else:
+            return [False, "Erro ao baixar video"]
     else:
-        return [False, "Erro ao baixar video"]
+        return [False, "Erro ao baixar video, " + str(res["error"])]
 def ai_response(text):
 
     url = 'http://localhost:11434/api/generate'
