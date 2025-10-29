@@ -114,6 +114,8 @@ def download_video(user, chatid, link, type, custom_file):
     if type == "audio":
         extension = ".mp3"
     path = '/tmp/ytdl/' + user + '/'
+    if "/ " not in path:
+        os.system('rm -rf ' + path)
     os.system('mkdir ' + path)
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
     #path = '/tmp/ytdl/' + user + '.' + str(value) + extension
@@ -125,8 +127,14 @@ def download_video(user, chatid, link, type, custom_file):
     myobj["url"] = link
     if type == "audio":
         myobj["downloadMode"] = "audio"
+    print("1")
     print(myobj)
-    res = requests.post(cobalt, json = myobj, headers = {"Accept" : "application/json",  "Content-Type" : "application/json"}).json()
+    res1 = requests.post(cobalt, json = myobj, headers = {"Accept" : "application/json",  "Content-Type" : "application/json"})
+    if res1 == "<Response [404]>":
+        return [False, "Bot Offline"]
+    print(res1)
+    res = res1.json()
+    
     if type == "audio" and expath == str(chatid):
         expath = res["filename"]
     print("Downloading video for " + user)
