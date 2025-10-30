@@ -6,4 +6,5 @@ do
     args=$args" "$arg;
     i=$((i + 1));
 done
-timeout 5m /usr/bin/yt-dlp $args #> /dev/null 2>&1
+echo $args
+timeout 5m /home/airgeadlamh/.local/bin/yt-dlp $args #> /dev/null 2>&1
