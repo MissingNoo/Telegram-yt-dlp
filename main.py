@@ -27,11 +27,6 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 #region mongo
 from pymongo import MongoClient
-
-uri = "mongodb://localhost:27017/"
-client = MongoClient(uri)
-database = client.get_database("ytdown")
-videos = database.get_collection("videos")
 #try:
     
 
@@ -74,7 +69,12 @@ def echo_all(message):
         #print(result)
         if result["sucess"]:
             try:
-                videos.insert_one({"link" : text, "user" : user, "type" : type, timestamp : time.time()})
+                uri = "mongodb://localhost:27017/"
+                client = MongoClient(uri)
+                database = client.get_database("ytdown")
+                videos = database.get_collection("videos")
+                videos.insert_one({"link" : text, "user" : user, "type" : type, "timestamp" : time.time()})
+                client.close()                
             except Exception as e:
                 print("Unable to find the document due to the following error: ", e)
             try:
