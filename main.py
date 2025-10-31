@@ -1,4 +1,5 @@
 import os
+import time
 import telebot
 from telebot import apihelper
 import telegram
@@ -22,6 +23,29 @@ except: #bot is already logged out from api
 apihelper.API_URL = 'http://0.0.0.0:' + str(API_PORT) + '/bot{0}/{1}'
 apihelper.FILE_URL = 'http://0.0.0.0:' + str(API_PORT)
 bot = telebot.TeleBot(BOT_TOKEN)
+#endregion
+
+#region mongo
+from pymongo import MongoClient
+
+uri = "mongodb://localhost:27017/"
+client = MongoClient(uri)
+database = client.get_database("ytdown")
+videos = database.get_collection("videos")
+#try:
+    
+
+    # Query for a movie that has the title 'Back to the Future'
+    #query = { "title": "Back to the Future" }
+    #movie = movies.find_one(query)
+
+    #print(movie)
+
+    #client.close()
+
+#except Exception as e:
+#    raise Exception("Unable to find the document due to the following error: ", e)
+
 #endregion
 
 @bot.message_handler(func=lambda msg: True)
@@ -49,6 +73,10 @@ def echo_all(message):
             result = download_video(user, chatid, text, type)
         #print(result)
         if result["sucess"]:
+            try:
+                videos.insert_one({"link" : text, "user" : user, "type" : type, timestamp : time.time()})
+            except Exception as e:
+                print("Unable to find the document due to the following error: ", e)
             try:
                 video = open(result["path"], 'rb')
                 if type == "audio":
