@@ -59,12 +59,16 @@ def echo_all(message):
             text = text.replace("/audio", "")
         if "/live " not in text and "/live/" in text:
             can_download = False
+        if "list=" in text:
+            text = text.split("?")[0]
         if "x.com" in text:
             type = "x"
+            text = text.replace("x.com", "fxtwitter.com")
             text = str.strip(text)
 
         if can_download:
-            #startreply = bot.reply_to(message, "Downloading")
+            if type != "x":
+                startreply = bot.reply_to(message, "Downloading")
             result = download_video(user, chatid, text, type)
         #print(result)
         if result["sucess"]:
@@ -90,7 +94,7 @@ def echo_all(message):
             except:
                 print("File not found!")
             
-            #bot.delete_message(startreply.chat.id, startreply.id)
+            bot.delete_message(startreply.chat.id, startreply.id)
             #sendingreply = bot.reply_to(message, "Uploading")
             try:
                 if type == "audio":
