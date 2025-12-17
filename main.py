@@ -64,11 +64,11 @@ def echo_all(message):
         if "x.com" in text:
             type = "x"
             text = text.replace("x.com", "fxtwitter.com")
-            text = str.strip(text)
+            #text = str.strip(text)
 
         if can_download:
-            if type != "x":
-                startreply = bot.reply_to(message, "Downloading")
+            #if type != "x":
+            startreply = bot.reply_to(message, "Downloading")
             result = download_video(user, chatid, text, type)
         #print(result)
         if result["sucess"]:
