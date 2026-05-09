@@ -54,6 +54,8 @@ def echo_all(message):
     can_download = True
     if (("https" in text or "youtu.be" in text or "youtube.com" in text) and "channel" not in text) or "reddit.com" in text or "@eduytdl_bot" in text or "instagram" in text or "x.com" in text:
         text = text.replace("@eduytdl_bot", "").replace("channel", "asdasdkasdkaskdasd").replace(" ", "")
+        if "&" in text:
+            text = text.split("&")[0]
         if "/audio" in text:
             type = "audio"
             text = text.replace("/audio", "")
@@ -82,7 +84,10 @@ def echo_all(message):
             except Exception as e:
                 print("Unable to find the document due to the following error: ", e)
             try:
-                video = open(result["path"], 'rb')
+                vv = result["path"]
+                if os.path.exists(vv) == False:
+                    vv = vv + ".webm"
+                video = open(vv, 'rb')
                 if type == "audio":
                     ff = os.system("ffmpeg -i " + result["path"] + " " + result["path"].replace(".mp4", ".mp3"))
                     if ff == 0:

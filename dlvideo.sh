@@ -7,4 +7,4 @@ do
     i=$((i + 1));
 done
 echo $args
-timeout 5m /usr/bin/yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"  $args #> /dev/null 2>&1
+timeout 3m yt-dlp --js-runtimes deno --remote-components ejs:github --cookies-from-browser firefox $args -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" #> /dev/null 2>&1
